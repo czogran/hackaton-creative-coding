@@ -3,11 +3,18 @@
 <!--<button pButton [label]="'START'"></button>-->
 <div
     #paperComponentWrapper
-    style="display: flex; justify-content: center; align-items: baseline; height: 50%"
+    style="
+        display: flex;
+        justify-content: center;
+        align-items: baseline;
+        /*height: 50%;*/
+        width: 1080px;
+        height: 1920px;
+    "
 >
     <app-paper
         #paperComponent
         [size]="size"
-        style="width:1080px; height: 1920px"
+        style="width: 1080px; height: 1500px"
     ></app-paper>
 </div>

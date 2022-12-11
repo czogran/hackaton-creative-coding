@@ -1,4 +1,13 @@
-<!--<p>paper works!</p>-->
-<!--whhhhhhhhhhhhat-->
-{{width}}
-<canvas  #canvas id="canvas" (mousemove)="mouseMove($event)" width=1080 height=1920px></canvas>
+<canvas
+    #canvas
+    id="canvas"
+    (mousemove)="mouseMove($event)"
+    (touchmove)="touchMove($event)"
+    (mousedown)="mouseClicked(true)"
+    (mouseup)="mouseClicked(false)"
+
+    (touchstart)="mouseClicked(true)"
+    (touchend)="mouseClicked(false)"
+    width="1080"
+    height="1500"
+></canvas>
