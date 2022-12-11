@@ -1,0 +1,16 @@
+app-user-panel {
+    .buttons-wrapper {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    .contribute-button {
+        margin-left: 20px;
+        margin-right: 20px;
+
+    }
+}
