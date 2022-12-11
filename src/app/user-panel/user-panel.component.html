@@ -28,7 +28,12 @@
         <div class="buttons-wrapper">
             <button
                 pButton
-                [label]="'POSITIVE'"
+                [label]="
+                    amountOfHappyUsers > MAX_NUMBER_OF_HAPPY_USERS
+                        ? 'YOU ARE HAPPY'
+                        : 'POSITIVE'
+                "
+                [disabled]="amountOfHappyUsers > MAX_NUMBER_OF_HAPPY_USERS"
                 (click)="addHappyUser()"
                 style="margin-right: 20px"
             ></button>
@@ -41,7 +46,12 @@
             <!--            ></button>-->
             <button
                 pButton
-                [label]="'NEGATIVE'"
+                [label]="
+                    amountOfHappyUsers < -MAX_NUMBER_OF_HAPPY_USERS
+                        ? 'YOU ARE SAD'
+                        : 'NEGATIVE'
+                "
+                [disabled]="amountOfHappyUsers < -MAX_NUMBER_OF_HAPPY_USERS"
                 (click)="addSadUser()"
             ></button>
         </div>

@@ -40,6 +40,9 @@ export class PaperComponent implements OnInit, AfterViewInit {
 
     @Input()
     mouthSelected: boolean = true;
+    private a1: number;
+    private a2: number;
+    private firstJointCenter: number[];
 
     @Input()
     set drawInterface(draw: boolean) {
@@ -69,10 +72,6 @@ export class PaperComponent implements OnInit, AfterViewInit {
         if (!size) {
             return;
         }
-        // console.log('size');
-        // console.log(size);
-        // console.log(window.innerWidth);
-        // console.log(window.innerHeight);
 
         this.width = size.width;
         this.height = size.height;
@@ -94,11 +93,42 @@ export class PaperComponent implements OnInit, AfterViewInit {
         setTimeout(() => this.draw(), 100);
     }
 
+    calculateAngles2(x: number, y: number, a1: number, a2: number) {
+        const factor = Math.min(
+            (x ** 2 + y ** 2 - a1 ** 2 - a2 ** 2) / 2 / a1 / a2,
+            1
+        );
+
+        const b = Math.acos(factor);
+
+        console.log('calculateAngles2', x, y, a1, a2);
+        console.log(b);
+        console.log((x ** 2 + y ** 2 - a1 ** 2 - a2 ** 2) / 2 / a1 / a2);
+
+        return b;
+    }
+
+    calculateAngles1(x: number, y: number, a1: number, a2: number, q1: number) {
+        // const factor = Math.min(
+        //     (x ** 2 + y ** 2 - a1 ** 2 - a2 ** 2) / 2 / a1 / a2,
+        //     1
+        // );
+
+        const b =
+            Math.asin((a2 * Math.sin(q1)) / Math.sqrt(x ** 2 + y ** 2)) +
+            Math.atan2(y, x);
+
+        console.log('calculateAngles1', x, y, a1, a2);
+        console.log(b);
+        return b;
+        // console.log((x ** 2 + y ** 2 - a1 ** 2 - a2 ** 2) / 2 / a1 / a2);
+    }
+
     draw() {}
 
     drawRobot() {
         const joint1RotatingAngle = 110;
-        const joint2RotatingAngle = -90;
+        const joint2RotatingAngle = -80;
 
         // const joint1RotatingAngle = 0;
         // const joint2RotatingAngle = 0;
@@ -119,6 +149,11 @@ export class PaperComponent implements OnInit, AfterViewInit {
             rectangle.center.x,
             rectangle.center.y + (rectangle.height - jointRadius / 2) / 2,
         ];
+
+        this.firstJointCenter = firstJointCenter;
+
+        console.log(firstJointCenter);
+        console.log('firstJointCenter');
 
         this.firstJoint = new Path.Circle({
             center: firstJointCenter,
@@ -207,7 +242,28 @@ export class PaperComponent implements OnInit, AfterViewInit {
         );
         this.gripper.remove();
         this.gripper = gripperBackup;
+
+        this.calculateArmsLengths();
     }
+
+    calculateArmsLengths() {
+        this.a1 = this.calculateDistanceBetweenPoints(
+            {
+                x: this.firstJoint.position.x,
+                y: this.firstJoint.position.y,
+            },
+            { x: this.secondJoint.position.x, y: this.secondJoint.position.y }
+        );
+
+        this.a2 = this.calculateDistanceBetweenPoints(
+            {
+                x: this.secondJoint.position.x,
+                y: this.secondJoint.position.y,
+            },
+            { x: this.gripper.position.x, y: this.gripper.position.y }
+        );
+    }
+    drawGripper() {}
 
     drawFace() {
         this.faceCenter = { x: this.width / 2, y: this.height * 0.3 };
@@ -280,19 +336,34 @@ export class PaperComponent implements OnInit, AfterViewInit {
     }
 
     smile() {
-        const step = Math.PI / (this.mouth.segments.length - 1);
+        const numberOfSegments = this.mouth.segments.length;
+        console.log(this.mouth.segments[Math.floor(numberOfSegments / 2)]);
+
+        const step = Math.PI / (numberOfSegments - 1);
         this.mouth.segments.forEach((segment, index) => {
-            if (index !== this.mouth.segments.length - 1) {
-                const curve = Math.sin(step * index);
+            if (index !== numberOfSegments - 1) {
+                const curve = Math.sin(step * index) * 2;
                 this.mouth.segments[index].point = new Point([
                     this.mouth.segments[index].point.x,
                     this.mouthY +
                         curve *
                             Math.sign(this.amountOfHappyUsers) *
-                            Math.min(Math.abs(this.amountOfHappyUsers), 100),
+                            Math.min(Math.abs(this.amountOfHappyUsers), 50),
                 ]);
             }
         });
+        this.mouth.smooth({ type: 'continuous' });
+
+        // const middleSegment =
+        //     this.mouth.segments[Math.floor(numberOfSegments / 2)];
+        // const x = this.firstJoint.position.x - middleSegment.point.x;
+        // const y = this.firstJoint.position.y - middleSegment.point.y;
+        //
+        // const q2 = this.calculateAngles2(x, y, this.a1, this.a2);
+        // const q1 = this.calculateAngles1(x, y, this.a1, this.a2, q2);
+        //
+        // const q1radians = (q1 * 180) / Math.PI;
+        // this.robotArm1.rotate(q1radians, new Point(this.firstJointCenter));
     }
 
     moveMouth(point: ElementPosition) {

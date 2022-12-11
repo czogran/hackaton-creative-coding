@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { HttpServiceService } from '../services/http-service.service';
 
+
 @Component({
     selector: 'app-interface-panel',
     templateUrl: './interface-panel.component.html',

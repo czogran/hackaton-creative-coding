@@ -8,7 +8,7 @@ import {
     ViewChild,
     ViewEncapsulation,
 } from '@angular/core';
-import { ElementSize } from '../app.component';
+import { ElementSize, MAX_NUMBER_OF_HAPPY_USERS } from '../app.component';
 import { HttpServiceService } from '../services/http-service.service';
 
 @Component({
@@ -22,17 +22,12 @@ export class UserPanelComponent implements AfterViewInit, OnDestroy {
     paperComponentWrapper: ElementRef;
     @ViewChild('paperComponent', { read: ElementRef })
     paperComponent: ElementRef<HTMLElement>;
-    private observer: ResizeObserver;
     size: ElementSize;
     usersOnline: number = 0;
     private interval: NodeJS.Timer;
-
-    @HostListener('window:beforeunload', ['$event']) unloadHandler(
-        event: Event
-    ) {
-        console.log('Processing beforeunload...', event);
-        this.http.removeUser();
-    }
+    private usersInterval: NodeJS.Timer;
+    amountOfHappyUsers: number;
+    MAX_NUMBER_OF_HAPPY_USERS = MAX_NUMBER_OF_HAPPY_USERS;
 
     constructor(
         private cd: ChangeDetectorRef,
@@ -54,23 +49,26 @@ export class UserPanelComponent implements AfterViewInit, OnDestroy {
                 width: window.innerWidth,
                 height: window.innerHeight * 0.8,
             };
+
+            this.interval = setInterval(() => {
+                this.http.getUserMood().subscribe((response) => {
+                    const usersMood = JSON.parse(JSON.stringify(response));
+                    this.amountOfHappyUsers = usersMood['mood'];
+                });
+            }, 500);
+
+            this.usersInterval = setInterval(() => {
+                this.http.getUsers().subscribe((response) => {
+                    const users = JSON.parse(JSON.stringify(response));
+                    this.usersOnline = users['users'];
+                });
+            }, 1000);
         });
-        this.observer = new ResizeObserver((entries) => {
-            const nativeElement = this.paperComponent.nativeElement;
-            this.size = {
-                width: nativeElement.offsetWidth,
-                height: nativeElement.offsetHeight,
-            };
-            this.cd.detectChanges();
-        });
-        // this.observer.observe(
-        //     this.paperComponentWrapper.nativeElement as Element
-        // );
     }
 
     ngOnDestroy() {
-        this.observer.unobserve(this.paperComponentWrapper.nativeElement);
         clearInterval(this.interval);
+        clearInterval(this.usersInterval);
     }
     contribute() {}
 

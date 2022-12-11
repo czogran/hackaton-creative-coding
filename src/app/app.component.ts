@@ -10,6 +10,8 @@ import {
 } from '@angular/core';
 import { MegaMenuItem } from 'primeng/api';
 
+export const MAX_NUMBER_OF_HAPPY_USERS = 50;
+
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
