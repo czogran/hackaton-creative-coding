@@ -35,18 +35,50 @@ export class PaperComponent implements OnInit, AfterViewInit {
     private secondJoint: paper.Path.Circle;
     private robotArm2: paper.Path.Rectangle;
     private gripper: paper.Path.Circle;
+    private mouthY: number;
+    private _amountOfHappyUsers: number;
+
+    @Input()
+    mouthSelected: boolean = true;
+
+    @Input()
+    set drawInterface(draw: boolean) {
+        if (draw) {
+            this.project.clear();
+            this.drawRobot();
+            this.drawFace();
+            this.drawMouth();
+        }
+    }
+
+    @Input()
+    set amountOfHappyUsers(amountOfHappyUsers: number) {
+        if (!amountOfHappyUsers) {
+            return;
+        }
+        this._amountOfHappyUsers = amountOfHappyUsers;
+        this.smile();
+    }
+
+    get amountOfHappyUsers() {
+        return this._amountOfHappyUsers;
+    }
 
     @Input()
     set size(size: ElementSize) {
         if (!size) {
             return;
         }
+        // console.log('size');
+        // console.log(size);
+        // console.log(window.innerWidth);
+        // console.log(window.innerHeight);
 
-        // this.width = size.width;
-        // this.height = size.height;
+        this.width = size.width;
+        this.height = size.height;
 
-        // this.canvas.style.height = this.height + 'px';
-        // this.canvas.style.width = this.width + 'px';
+        this.canvas.style.height = this.height + 'px';
+        this.canvas.style.width = this.width + 'px';
         this.project.clear();
         this.drawRobot();
         this.drawFace();
@@ -173,14 +205,14 @@ export class PaperComponent implements OnInit, AfterViewInit {
             joint2RotatingAngle,
             new Point(secondJointTransformedCenter)
         );
-      this.gripper.remove();
-      this.gripper = gripperBackup;
+        this.gripper.remove();
+        this.gripper = gripperBackup;
     }
 
     drawFace() {
         this.faceCenter = { x: this.width / 2, y: this.height * 0.3 };
 
-        this.faceRadius = this.faceCenter.x * 0.75;
+        this.faceRadius = Math.min(this.faceCenter.x, this.faceCenter.y) * 0.75;
 
         this.face = new Path.Circle({
             center: [this.faceCenter.x, this.faceCenter.y],
@@ -233,19 +265,34 @@ export class PaperComponent implements OnInit, AfterViewInit {
         const mouthWidth = mouthShift.x * 2;
         const mouthStep = this.width * 0.04;
 
+        this.mouthY = this.faceCenter.y + mouthShift.y;
+
         let i = 0;
         while (i < mouthWidth) {
             this.mouth.add(
-                new Point(
-                    this.faceCenter.x - mouthShift.x + i,
-                    this.faceCenter.y + mouthShift.y
-                )
+                new Point(this.faceCenter.x - mouthShift.x + i, this.mouthY)
             );
             i += mouthStep;
         }
 
         this.mouth.smooth({ type: 'continuous' });
-        this.mouth.selected = true;
+        this.mouth.selected = this.mouthSelected;
+    }
+
+    smile() {
+        const step = Math.PI / (this.mouth.segments.length - 1);
+        this.mouth.segments.forEach((segment, index) => {
+            if (index !== this.mouth.segments.length - 1) {
+                const curve = Math.sin(step * index);
+                this.mouth.segments[index].point = new Point([
+                    this.mouth.segments[index].point.x,
+                    this.mouthY +
+                        curve *
+                            Math.sign(this.amountOfHappyUsers) *
+                            Math.min(Math.abs(this.amountOfHappyUsers), 100),
+                ]);
+            }
+        });
     }
 
     moveMouth(point: ElementPosition) {
@@ -309,21 +356,21 @@ export class PaperComponent implements OnInit, AfterViewInit {
     ngAfterViewInit(): void {
         this.canvas = this.canvasElement.nativeElement;
         this.project = new Project(this.canvas);
-        this.myCircle = new Path.Circle({
-            center: [80, 50],
-            radius: 30,
-            strokeColor: 'black',
-        });
-
-        let mouth = new Path({
-            strokeColor: '#E4141B',
-            strokeWidth: 20,
-            strokeCap: 'round',
-        });
-
-        for (let i = 0; i < 10; i++) {
-            mouth.add(new Point(i * length, i));
-        }
+        // this.myCircle = new Path.Circle({
+        //     center: [80, 50],
+        //     radius: 30,
+        //     strokeColor: 'black',
+        // });
+        //
+        // let mouth = new Path({
+        //     strokeColor: '#E4141B',
+        //     strokeWidth: 20,
+        //     strokeCap: 'round',
+        // });
+        //
+        // for (let i = 0; i < 10; i++) {
+        //     mouth.add(new Point(i * length, i));
+        // }
     }
 
     mouseMove(event: any) {
