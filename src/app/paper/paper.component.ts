@@ -33,6 +33,8 @@ export class PaperComponent implements OnInit, AfterViewInit {
     private wait: Boolean = false;
     private robotArm1: paper.Path.Rectangle;
     private secondJoint: paper.Path.Circle;
+    private robotArm2: paper.Path.Rectangle;
+    private gripper: paper.Path.Circle;
 
     @Input()
     set size(size: ElementSize) {
@@ -63,11 +65,18 @@ export class PaperComponent implements OnInit, AfterViewInit {
     draw() {}
 
     drawRobot() {
+        const joint1RotatingAngle = 110;
+        const joint2RotatingAngle = -90;
+
+        // const joint1RotatingAngle = 0;
+        // const joint2RotatingAngle = 0;
+
+        const baseHeight = -this.height * 0.2;
         const rectangle = new Rectangle(
             this.width * 0.1,
             this.height,
             this.width * 0.1,
-            -this.height * 0.2
+            baseHeight
         );
         this.robotBase = new Path.Rectangle(rectangle);
         this.robotBase.fillColor = new Color(255, 0, 0, 0.5);
@@ -89,14 +98,14 @@ export class PaperComponent implements OnInit, AfterViewInit {
 
         const rectangleArm1 = new Rectangle(
             this.width * 0.12,
-            this.height - this.height * 0.2 - jointRadius / 2,
+            this.height + baseHeight - jointRadius / 2,
             this.width * 0.06,
             -this.height * 0.2
         );
 
         this.robotArm1 = new Path.Rectangle(rectangleArm1);
         this.robotArm1.fillColor = new Color(255, 0, 0, 0.5);
-        this.robotArm1.rotate(110, new Point(firstJointCenter));
+        this.robotArm1.rotate(joint1RotatingAngle, new Point(firstJointCenter));
 
         const secondJointCenter = [
             rectangleArm1.center.x,
@@ -112,8 +121,60 @@ export class PaperComponent implements OnInit, AfterViewInit {
 
         this.secondJoint.fillColor = new Color(0.5, 0.5, 0.5);
 
-      this.secondJoint.rotate(110, new Point(firstJointCenter));
+        this.secondJoint.rotate(
+            joint1RotatingAngle,
+            new Point(firstJointCenter)
+        );
 
+        const movedSecondJoint = this.secondJoint.clone();
+        const secondJointTransformedCenter = [
+            movedSecondJoint.position.x,
+            movedSecondJoint.position.y,
+        ];
+
+        const rectangleArm2 = new Rectangle(
+            this.width * 0.12,
+            this.height + 2 * baseHeight - jointRadius,
+            this.width * 0.06,
+            baseHeight
+        );
+
+        this.robotArm2 = new Path.Rectangle(rectangleArm2);
+        this.robotArm2.fillColor = new Color(200, 0, 0, 1);
+        this.robotArm2.rotate(joint1RotatingAngle, new Point(firstJointCenter));
+        const backup = this.robotArm2.clone();
+        this.robotArm2.remove();
+        this.robotArm2 = backup;
+
+        this.robotArm2.rotate(
+            joint2RotatingAngle,
+            new Point(secondJointTransformedCenter)
+        );
+
+        const gripperJointCenter = [
+            rectangle.center.x,
+            rectangle.center.y +
+                baseHeight * 2.5 -
+                jointRadius -
+                jointRadius / 8,
+        ];
+
+        this.gripper = new Path.Circle({
+            center: gripperJointCenter,
+            radius: jointRadius / 8,
+            strokeColor: 'black',
+        });
+
+        this.gripper.fillColor = new Color(0.5, 0.5, 1);
+
+        this.gripper.rotate(joint1RotatingAngle, new Point(firstJointCenter));
+        const gripperBackup = this.gripper.clone();
+        gripperBackup.rotate(
+            joint2RotatingAngle,
+            new Point(secondJointTransformedCenter)
+        );
+      this.gripper.remove();
+      this.gripper = gripperBackup;
     }
 
     drawFace() {
