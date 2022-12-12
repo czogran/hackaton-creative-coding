@@ -3,7 +3,6 @@ import {
     ChangeDetectorRef,
     Component,
     ElementRef,
-    HostListener,
     OnDestroy,
     ViewChild,
     ViewEncapsulation,
@@ -20,8 +19,10 @@ import { HttpServiceService } from '../services/http-service.service';
 export class UserPanelComponent implements AfterViewInit, OnDestroy {
     @ViewChild('paperComponentWrapper')
     paperComponentWrapper: ElementRef;
+
     @ViewChild('paperComponent', { read: ElementRef })
     paperComponent: ElementRef<HTMLElement>;
+
     size: ElementSize;
     usersOnline: number = 0;
     private interval: NodeJS.Timer;
